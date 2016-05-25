@@ -233,6 +233,10 @@
     {
       "matches": ["*://*/*.mp3", "*://*/*.mp3?*"],
       "js": ["shared.js", "keysocket-builtin-player.js"]
+    },
+    {
+      "matches": ["*://8tracks.com/*"],
+      "js": ["shared.js", "keysocket-eighttracks.js"]
     }
   ]
 }
