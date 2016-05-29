@@ -1,10 +1,9 @@
+var playButtonSelector = '#player_play_button';
+var pauseButtonSelector = '#player_pause_button';
+var skipButtonSelector = '#player_skip_button';
+var nextMixButtonSelector = '#next_mix_button';
+    
 function onKeyPress(key) {
-
-    var skipButtonSelector = '#player_skip_button';
-    var playButtonSelector = '#player_play_button';
-    var pauseButtonSelector = '#player_pause_button';
-    var nextMixButtonSelector = '#next_mix_button';
-
     if (key === NEXT) {
         pressOneButtonOrAnother(skipButtonSelector, nextMixButtonSelector)
     } else if (key === PLAY) {
@@ -12,14 +11,14 @@ function onKeyPress(key) {
     }
 }
 
-function pressOneButtonOrAnother(oneButtonSelector,anotherButtonSelector) {
+function pressOneButtonOrAnother(oneButtonSelector, anotherButtonSelector) {
     var oneButton = document.querySelector(oneButtonSelector);
-    if(window.getComputedStyle(oneButton).display == "none"){
-        var anotherButton = document.querySelector(anotherButtonSelector);
-        simulateClick(anotherButton);
+    if(window.getComputedStyle(oneButton).display != "none"){
+        simulateClick(oneButton);
     }
     else{
-        simulateClick(oneButton);
+        var anotherButton = document.querySelector(anotherButtonSelector);
+        simulateClick(anotherButton);
     }
 }
 
