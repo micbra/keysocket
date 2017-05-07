@@ -227,12 +227,20 @@
       "js": ["shared.js", "keysocket-zvooq.js"]
     },
     {
+      "matches": ["*://*.myzuka.fm/*"],
+      "js": ["shared.js", "keysocket-myzukafm.js"]
+    },
+    {
       "matches": ["*://*.bandcamp.com/*"],
       "js": ["shared.js","keysocket-bandcamp.js"]
     },
     {
       "matches": ["*://*/*.mp3", "*://*/*.mp3?*"],
       "js": ["shared.js", "keysocket-builtin-player.js"]
+    },
+    {
+      "matches": ["*://8tracks.com/*"],
+      "js": ["shared.js", "keysocket-eighttracks.js"]
     }
   ]
 }
