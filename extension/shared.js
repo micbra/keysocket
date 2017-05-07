@@ -43,4 +43,4 @@ chrome.runtime.sendMessage({command: 'registerTab'});
 
 window.onunload = function() {
     chrome.runtime.sendMessage({command: "unregisterTab"});
-}
+};

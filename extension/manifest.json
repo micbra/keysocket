@@ -245,6 +245,14 @@
     {
       "matches": ["*://pleer.com/*"],
       "js": ["shared.js", "keysocket-pleer-com.js"]
+    },
+    {
+      "matches": ["*://*.netflix.com/watch/*"],
+      "js": ["shared.js", "keysocket-netflix.js"]
+    },
+    {
+      "matches": ["*://*.vimeo.com/*"],
+      "js": ["shared.js", "keysocket-vimeo.js"]
     }
   ]
 }

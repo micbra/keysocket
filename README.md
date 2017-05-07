@@ -23,6 +23,7 @@ Currently supported services:
    * Music Choice
    * Myzuka.fm
    * Naxos Music Library
+   * Netflix
    * Ok.ru
    * Overcast
    * Pandora
@@ -45,6 +46,7 @@ Currently supported services:
    * Tracksflow.com
    * Twitch.tv
    * Ustream.tv
+   * Vimeo
    * vk.com (Vkontakte)
    * Xiami Music
    * Youtube.com
