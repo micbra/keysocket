@@ -241,6 +241,10 @@
     {
       "matches": ["*://8tracks.com/*"],
       "js": ["shared.js", "keysocket-eighttracks.js"]
+    },
+    {
+      "matches": ["*://pleer.com/*"],
+      "js": ["shared.js", "keysocket-pleer-com.js"]
     }
   ]
 }

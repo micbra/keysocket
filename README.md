@@ -27,6 +27,7 @@ Currently supported services:
    * Overcast
    * Pandora
    * Phish Tracks
+   * Pleer.com
    * Plex
    * Pocketcasts.com
    * Rdio
