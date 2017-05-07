@@ -51,6 +51,7 @@ Currently supported services:
    * Zvooq
    * Яндекс.Музыка (Yandex.Music)
    * Яндекс.Радио (Yandex.Radio)
+   * 8tracks.com
 
 ## Usage
 
