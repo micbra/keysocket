@@ -12,3 +12,5 @@ function onKeyPress(key) {
         simulateClick(document.querySelector(playTarget));
     }
 }
+
+pluginLoaded('pleer.com');

@@ -44,3 +44,7 @@ chrome.runtime.sendMessage({command: 'registerTab'});
 window.onunload = function() {
     chrome.runtime.sendMessage({command: "unregisterTab"});
 };
+
+function pluginLoaded(extName) {
+    console.log('Web Page Media Keys Extension: ' + extName + ' plugin loaded');
+}

@@ -21,3 +21,5 @@ function onKeyPress(key) {
         }
     }
 }
+
+pluginLoaded('Youtube');

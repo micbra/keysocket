@@ -13,7 +13,7 @@ function onKeyPress(key) {
 
 function pressOneButtonOrAnother(oneButtonSelector, anotherButtonSelector) {
     var oneButton = document.querySelector(oneButtonSelector);
-    if(window.getComputedStyle(oneButton).display != "none"){
+    if(window.getComputedStyle(oneButton).display !== "none"){
         simulateClick(oneButton);
     }
     else{
@@ -22,4 +22,4 @@ function pressOneButtonOrAnother(oneButtonSelector, anotherButtonSelector) {
     }
 }
 
-console.log('keysocket: Loading 8tracks\' extension keysocket');
+pluginLoaded('8tracks');

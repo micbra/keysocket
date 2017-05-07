@@ -13,3 +13,5 @@ function onKeyPress(key) {
         simulateClick(playPauseButton);
     }
 }
+
+pluginLoaded('pandoraow');

@@ -20,3 +20,5 @@ function onKeyPress(key) {
             break;
     }
 }
+
+pluginLoaded('netflix');
