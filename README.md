@@ -21,6 +21,7 @@ Currently supported services:
    * JB Hi-Fi Now
    * Livestream.com
    * Music Choice
+   * Myzuka.fm
    * Naxos Music Library
    * Ok.ru
    * Overcast
