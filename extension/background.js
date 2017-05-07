@@ -15,7 +15,7 @@
 
 var registeredTabs = [];
 var registerTab = function (tabId) {
-    if (registeredTabs.indexOf(tabId) == -1) {
+    if (registeredTabs.indexOf(tabId) === -1) {
         registeredTabs.push(tabId);
 
         chrome.pageAction.show(tabId);

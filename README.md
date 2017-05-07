@@ -64,7 +64,7 @@ Feel free to create pull requests for new adapters for other music players and b
 
 ## Copyrights
 
-This software is maintened by [Valera Leontyev][vl] (feedbee@gmail.com) and licensed by  Apache 2.0.
+This software is maintained by [Valera Leontyev][vl] (feedbee@gmail.com) and licensed by  Apache 2.0.
 Original version of the extension created by [Boris Smus][bs] and named [keysocket][ks].
 [Extension icon][icon] created by [José García][jg].
 
