@@ -19,7 +19,7 @@
       "description": "Play Previous Track",
       "global":true
     },
-      "play-pause": {
+    "play-pause": {
         "suggested_key": {
           "default": "MediaPlayPause",
           "mac": "MediaPlayPause"
@@ -27,7 +27,7 @@
         "description": "Play/Pause Active Audio",
         "global":true
     },
-      "next": {
+    "next": {
         "suggested_key": {
           "default": "MediaNextTrack",
           "mac": "MediaNextTrack"
@@ -35,7 +35,7 @@
         "description": "Play Next Track",
         "global":true
     },
-      "stop": {
+    "stop": {
         "suggested_key": {
           "default": "MediaStop",
           "mac": "MediaStop"
