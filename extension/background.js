@@ -22,8 +22,9 @@ var registerTab = function (tabId) {
         chrome.pageAction.setIcon({
             tabId: tabId,
             path: {
-                '19': 'icons/icon19.png',
-                '38': 'icons/icon38.png'
+                '16': 'icons/icon16.png',
+                '24': 'icons/icon24.png',
+                '32': 'icons/icon32.png'
             }
         });
         chrome.pageAction.setTitle({
@@ -42,8 +43,9 @@ var unregisterTab = function (tabId) {
         chrome.pageAction.setIcon({
             tabId: tabId,
             path: {
-                '19': 'icons/icon19-inactive.png',
-                '38': 'icons/icon38-inactive.png'
+                '16': 'icons/icon16-inactive.png',
+                '24': 'icons/icon24-inactive.png',
+                '32': 'icons/icon32-inactive.png'
             }
         });
         chrome.pageAction.setTitle({
