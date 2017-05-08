@@ -131,7 +131,7 @@ chrome.tabs.onActivated.addListener(function (evt) {
  * Create context menu (for all tabs)
  * {
  */
-chrome.contextMenus.create({id: "keySocketMediaKeys-group", title: "Key Socket Media Keys"});
+chrome.contextMenus.create({id: "keySocketMediaKeys-group", title: "Web Page Media Keys"});
 chrome.contextMenus.create({
     parentId: "keySocketMediaKeys-group",
     id: "keySocketMediaKeys-disableThisTab",
