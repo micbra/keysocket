@@ -8,6 +8,9 @@ function onKeyPress(key) {
     } else if (key === PREV) {
         var backButton = document.querySelector('.spoticon-skip-back-16');
         simulateClick(backButton);
+    } else if (key === STOP) {
+        var stopButton = frame.contentDocument.querySelector('#play-pause.playing');
+        simulateClick(stopButton);
     }
 }
 
