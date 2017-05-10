@@ -1,4 +1,4 @@
-#﻿Web Page Media Keys
+# Web Page Media Keys
 
 **Web Page Media Keys** is an extension for Google Chrome browser, that provides bindings from keyboard media keys 
 to a web page. It allows your keyboard media keys (play/pause, next, previous) to work when you're listening to music
