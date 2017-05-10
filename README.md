@@ -65,7 +65,7 @@ Currently supported services:
 There is two ways of integration:
 
 1. Write a plugin for given web site (service).
-2. Implement generic [Web Page Media Control API][mpmca] from the service side.
+2. Implement generic [Web Page Media Control API][wpmca] from the service side.
 
 The first way is the only possible when you are not the site owner and it's impossible
 to ask site owner to implement Web Page Media Control API. In this case you can
@@ -75,7 +75,7 @@ After merge is done and extension is updated you'll enjoy the result.
 
 The second way is the right way when you are a site owner. There is no need to
 write a plugin if your can just put a few lines of code into your site. Detailed
-description of API available in [Web Page Media Control API][mpmca] repo. As
+description of API available in [Web Page Media Control API][wpmca] repo. As
 an example of working Web Page Media Control API implementation see
 [RelaxHub](http://relax-hub.com/).
 
