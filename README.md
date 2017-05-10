@@ -1,43 +1,48 @@
-﻿Web Page Media Keys
-===================
+#﻿Web Page Media Keys
 
 **Web Page Media Keys** is an extension for Google Chrome browser, that provides bindings from keyboard media keys 
 to a web page. It allows your keyboard media keys (play/pause, next, previous) to work when you're listening to music
 on common streaming websites.
 
-## Supported services
+## Supported Services
 
 Currently supported services:
-   * Amazon music player
+
+   * Amazon Music Player
    * Bop
    * Deezer
    * Digitally Imported (di.fm)
    * Gaana.com
-   * Google Music
+   * Google Play Music
    * Groove Music
    * Hype Machine
    * Jamstash
    * Jango.com
    * JB Hi-Fi Now
    * Livestream.com
+   * Mixcloud
    * Music Choice
    * Myzuka.fm
    * Naxos Music Library
    * Netflix
+   * Noon Pacific
+   * NRK Radio
    * Ok.ru
    * Overcast
    * Pandora
    * Phish Tracks
    * Pleer.com
+   * Picarto.tv
    * Plex
    * Pocketcasts.com
+   * Prostopleer
    * Rdio
    * Relax-Hub.com
    * Saavn.com
    * Slacker
    * SomaFM
    * Songza
-   * SoundCloud
+   * Soundcloud
    * Spotify
    * Superplayer.fm
    * Synology Audio Station v.5
@@ -49,13 +54,13 @@ Currently supported services:
    * Vimeo
    * vk.com (Vkontakte)
    * Xiami Music
-   * Youtube.com
+   * YouTube
    * Zvooq
    * Яндекс.Музыка (Yandex.Music)
    * Яндекс.Радио (Yandex.Radio)
    * 8tracks.com
    
-## Integrate Web Page Media Keys with any site
+## Integrate Web Page Media Keys With Any Site
 
 There is two ways of integration:
 
@@ -82,7 +87,7 @@ an example of working Web Page Media Control API implementation see
     * scroll to the bottom & click `Keyboard shortcuts`
     * find `Web Page Media Keys` and change each desired key to `Global`
 
-## Contribute please!
+## Contribute, Please!
 
 Feel free to create pull requests for new adapters for other music players and bug-fixes.
 
@@ -95,7 +100,7 @@ Apache 2.0. Original version of the extension created by [Boris Smus][bs] and na
 [vl]: https://github.com/feedbee
 [bs]: https://github.com/borismus
 [ks]: https://github.com/borismus/keysocket
-[crx]: https://chrome.google.com/webstore/detail/fphfgdknbpakeedbaenojjdcdoajihik
+[crx]: https://chrome.google.com/webstore/detail/web-page-media-keys/gndhohcpfmjgggkgkfafpchcnefnhhmc
 [icon]: https://www.iconfinder.com/icons/306926/multimedia_music_play_video_icon
 [jg]: https://www.iconfinder.com/josealonsogarcia
 [wpmca]: https://github.com/feedbee/web-page-media-control-api-spec

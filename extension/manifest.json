@@ -1,6 +1,6 @@
 {
   "name": "Web Page Media Keys",
-  "version": "0.8.3",
+  "version": "10.0.0",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
@@ -80,11 +80,11 @@
       "js": ["shared.js","keysocket-grooveshark.js"]
     },
     {
-      "matches": ["https://www.amazon.com/gp/dmusic/cloudplayer/*", "https://www.amazon.de/gp/dmusic/cloudplayer/*"],
+      "matches": ["https://music.amazon.com/*"],
       "js": ["shared.js","keysocket-amazon-cloud-player.js"]
     },
     {
-      "matches": ["http://www.pandora.com/*"],
+      "matches": ["*://www.pandora.com/*"],
       "js": ["shared.js","keysocket-pandora.js"]
     },
     {
@@ -133,7 +133,7 @@
       "js": ["shared.js","keysocket-musicchoice.js"]
     },
     {
-      "matches": ["*://*/webman/*"],
+      "matches": ["*://*/webman/*", "*://*/audio/"],
       "js": ["shared.js","keysocket-dsaudio5.js"]
     },
     {
@@ -167,6 +167,10 @@
     {
       "matches": ["https://overcast.fm/*"],
       "js": ["shared.js","keysocket-overcast.js"]
+    },
+    {
+      "matches": ["*://noonpacific.com/*"],
+      "js": ["shared.js","keysocket-noon-pacific.js"]
     },
     {
       "matches": ["*://plex.tv/web/*"],
@@ -217,6 +221,10 @@
       "js": ["shared.js","keysocket-livestream.js"]
     },
     {
+      "matches": ["*://picarto.tv/*", "*://*.picarto.tv/*"],
+      "js": ["shared.js","keysocket-picartotv.js"]
+    },
+    {
       "matches": ["*://play.pocketcasts.com/*"],
       "js": ["shared.js", "keysocket-pocketcasts.js"]
     },
@@ -231,6 +239,14 @@
     {
       "matches": ["*://*.bandcamp.com/*"],
       "js": ["shared.js","keysocket-bandcamp.js"]
+    },
+    {
+      "matches": ["*://*.mixcloud.com/*"],
+      "js": ["shared.js","keysocket-mixcloud.js"]
+    },
+    {
+      "matches": ["*://radio.nrk.no/*"],
+      "js": ["shared.js","shared-injection.js","keysocket-nrkradio.js"]
     },
     {
       "matches": ["*://*/*.mp3", "*://*/*.mp3?*"],

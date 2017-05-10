@@ -18,17 +18,21 @@ var PLAY = 'play-pause';
 var NEXT = 'next';
 var STOP = 'stop';
 
-function simulateClick(element) {
+function simulateClick(element, options) {
     if (!element) {
         console.log('keysocket: Cannot simulate click, element undefined');
         return false;
     }
 
-    var click = new MouseEvent('click', {
+    var clickConfig = {
         bubbles: true,
         cancelable: false,
         view: window
-    });
+    };
+    if (options && options.cancelable) {
+        clickConfig.cancelable = options.cancelable;
+    }
+    var click = new MouseEvent('click', clickConfig);
     return element.dispatchEvent(click);
 }
 

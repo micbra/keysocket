@@ -1,23 +1,26 @@
 function onKeyPress(key) {
-    switch(key) {
-        case PREV:
-            return;
-            break;
-        case PLAY:
-            var playPauseTemplate = '.player-control-button.player-play-pause.%s.icon-player-%s';
-            var regExpObj = new RegExp('%s', 'g');
-            var playElem = document.querySelector(playPauseTemplate.replace(regExpObj, 'play'));
-            var pauseElem = document.querySelector(playPauseTemplate.replace(regExpObj, 'pause'));
-
-            if (!playElem) {
-                simulateClick(pauseElem);
-            } else {
-                simulateClick(playElem);
+    if (key === NEXT) {
+        var nextButtonEpisode = document.querySelector('div.player-next-episode');
+        simulateClick(nextButtonEpisode);
+    } else if (key === PREV) {
+        var prevButtonEpisode = null;
+        var episodeList = document.querySelector('li.episode-list-item--expanded');
+        if (episodeList) {
+            prevButtonEpisode = episodeList.previousElementSibling.querySelector('div.play-icon');
+            if (prevButtonEpisode) {
+                episodeList.previousElementSibling.className += ' episode-list-item--expanded';
+                simulateClick(prevButtonEpisode);
             }
-            break;
-        case NEXT:
-            simulateClick(document.querySelector('.player-control-button.player-next-episode.container-icon-player-next-episode'));
-            break;
+        }
+    } else if (key === PLAY) {
+        playPauseButton = document.querySelector('.player-play-pause');
+        simulateClick(playPauseButton);
+    } else if (key === STOP) {
+        var isPlaying = document.querySelector('div.player-play-pause.pause');
+        if (isPlaying) {
+            var playPauseButton = document.querySelector('.player-play-pause');
+            simulateClick(playPauseButton);
+        }
     }
 }
 
