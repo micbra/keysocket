@@ -8,8 +8,10 @@ on common streaming websites.
 
 Currently supported services:
 
-   * Amazon Music Player
+   * Amazon Cloud Player
+   * Bandcamp
    * Bop
+   * Chrome Built-In Player
    * Deezer
    * Digitally Imported (di.fm)
    * Gaana.com
