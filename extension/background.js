@@ -13,100 +13,83 @@
  * limitations under the License.
  */
 
-// Tabs registration
+// Tabs registration & activation
 
+// All tabs that is supported by extension (have plugins)
 var registeredTabs = [];
+// Currently active tab
+var activeTab;
+
+// By default no tabs are active and a tab must be activated to receive key commands
 
 var registerTab = function (tabId) {
     if (registeredTabs.indexOf(tabId) === -1) {
         registeredTabs.push(tabId);
 
         chrome.pageAction.show(tabId);
-        chrome.pageAction.setIcon({
-            tabId: tabId,
-            path: {
-                '19': 'icons/icon19.png',
-                '38': 'icons/icon38.png'
-            }
-        });
-        chrome.pageAction.setTitle({
-            tabId: tabId,
-            title: 'Click to disable media keys for this tab'
-        });
 
-        updateContextMenu(tabId);
+        deactivateTab(tabId);
     }
 };
 
 var unregisterTab = function (tabId) {
+    deactivateTab(tabId);
+
     var index = registeredTabs.indexOf(tabId);
     if (index > -1) {
         registeredTabs.splice(index, 1);
 
-        chrome.pageAction.setIcon({
-            tabId: tabId,
-            path: {
-                '19': 'icons/icon19-inactive.png',
-                '38': 'icons/icon38-inactive.png'
-            }
-        });
-        chrome.pageAction.setTitle({
-            tabId: tabId,
-            title: 'Click to enable media keys for this tab'
-        });
-
-        updateContextMenu(tabId);
+        chrome.pageAction.hide(tabId);
     }
 };
 
-var unregisterAllButThisTab = function (tabId) {
-    chrome.tabs.getAllInWindow(null, function (tabs) {
-        for (var i = 0; i < tabs.length; i++) {
-            if (tabId !== tabs[i].id) {
-                unregisterTab(tabs[i].id);
-            }
+var activateTab = function (tabId) {
+    for (var i = 0; i < registeredTabs.length; i++) {
+        deactivateTab(registeredTabs[i]);
+    }
+
+    activeTab = tabId;
+
+    chrome.pageAction.setIcon({
+        tabId: tabId,
+        path: {
+            '19': 'icons/icon19.png',
+            '38': 'icons/icon38.png'
         }
     });
+    chrome.pageAction.setTitle({
+        tabId: tabId,
+        title: 'Click to disable media keys for this tab'
+    });
 
-    registerTab(tabId);
+    updateContextMenu(tabId);
 };
 
-var unregisterAllTabs = function () {
-    chrome.tabs.getAllInWindow(null, function (tabs) {
-        for (var i = 0; i < tabs.length; i++) {
-            unregisterTab(tabs[i].id);
+var deactivateTab = function (tabId) {
+    if (activeTab === tabId) {
+        activeTab = undefined;
+    }
+
+    chrome.pageAction.setIcon({
+        tabId: tabId,
+        path: {
+            '19': 'icons/icon19-inactive.png',
+            '38': 'icons/icon38-inactive.png'
         }
     });
-};
-
-var registerAllButThisTab = function (tabId) {
-    unregisterTab(tabId);
-
-    chrome.tabs.getAllInWindow(null, function (tabs) {
-        for (var i = 0; i < tabs.length; i++) {
-            if (tabId !== tabs[i].id) {
-                registerTab(tabs[i].id);
-            }
-        }
+    chrome.pageAction.setTitle({
+        tabId: tabId,
+        title: 'Click to enable media keys for this tab'
     });
-};
 
-var registerAllTabs = function () {
-    chrome.tabs.getAllInWindow(null, function (tabs) {
-        for (var i = 0; i < tabs.length; i++) {
-            registerTab(tabs[i].id);
-        }
-    });
+    updateContextMenu(tabId);
 };
 
 // Commands and messages
 
 chrome.commands.onCommand.addListener(function (command) {
     console.log('Command:', command);
-
-    for (var i = 0; i < registeredTabs.length; i++) {
-        chrome.tabs.sendMessage(registeredTabs[i], {command: command});
-    }
+    chrome.tabs.sendMessage(activeTab, {command: command});
 });
 
 chrome.runtime.onMessage.addListener(
@@ -130,11 +113,10 @@ chrome.tabs.onActivated.addListener(function (evt) {
 // Page action click handler
 
 chrome.pageAction.onClicked.addListener(function (tab) {
-    var index = registeredTabs.indexOf(tab.id);
-    if (index < 0) {
-        unregisterAllButThisTab(tab.id);
+    if (activeTab === tab.id) {
+        deactivateTab(tab.id);
     } else {
-        unregisterTab(tab.id);
+        activateTab(tab.id);
     }
 });
 
@@ -144,71 +126,29 @@ var updateContextMenu = function(tabId) {
     chrome.tabs.query({active: true}, function(tabs) {
         var tab = tabs[0];
         if (tab.id === tabId) {
-            var tabIsRegistered = (registeredTabs.indexOf(tabId) > -1);
-            chrome.contextMenus.update("keySocketMediaKeys-disableThisTab", {enabled: tabIsRegistered});
-            chrome.contextMenus.update("keySocketMediaKeys-enableThisTab", {enabled: !tabIsRegistered});
+            var tabIsActive = (activeTab === tabId);
+            chrome.contextMenus.update("keySocketMediaKeys-disableThisTab", {enabled: tabIsActive});
+            chrome.contextMenus.update("keySocketMediaKeys-enableThisTab", {enabled: !tabIsActive});
         }
     });
 };
 
 chrome.contextMenus.create({id: "keySocketMediaKeys-group", title: "Key Socket Media Keys"});
 
-chrome.contextMenus.create({
-    parentId: "keySocketMediaKeys-group",
-    id: "keySocketMediaKeys-disableThisTab",
-    title: "Disable this tab",
-    onclick: function (a, tab) {
-        unregisterTab(tab.id);
-    }
-});
+
 chrome.contextMenus.create({
     parentId: "keySocketMediaKeys-group",
     id: "keySocketMediaKeys-enableThisTab",
     title: "Enable this tab",
     onclick: function (a, tab) {
-        registerTab(tab.id);
+        activateTab(tab.id);
     }
 });
-
 chrome.contextMenus.create({
     parentId: "keySocketMediaKeys-group",
-    id: "keySocketMediaKeys-separator1",
-    type: "separator"
-});
-
-chrome.contextMenus.create({
-    parentId: "keySocketMediaKeys-group",
-    id: "keySocketMediaKeys-disableAllTabs",
-    title: "Disable all tabs",
-    onclick: unregisterAllTabs
-});
-chrome.contextMenus.create({
-    parentId: "keySocketMediaKeys-group",
-    id: "keySocketMediaKeys-enableAllTabs",
-    title: "Enable all tabs",
-    onclick: registerAllTabs
-});
-
-chrome.contextMenus.create({
-    parentId: "keySocketMediaKeys-group",
-    id: "keySocketMediaKeys-separator2",
-    type: "separator"
-});
-
-chrome.contextMenus.create({
-    parentId: "keySocketMediaKeys-group",
-    id: "keySocketMediaKeys-disableAllBut",
-    title: "Disable all but this tab",
+    id: "keySocketMediaKeys-disableThisTab",
+    title: "Disable this tab",
     onclick: function (a, tab) {
-        unregisterAllButThisTab(tab.id);
-    }
-});
-
-chrome.contextMenus.create({
-    parentId: "keySocketMediaKeys-group",
-    id: "keySocketMediaKeys-enableAllBut",
-    title: "Enable all but this tab",
-    onclick: function (a, tab) {
-        registerAllButThisTab(tab.id);
+        deactivateTab(tab.id);
     }
 });
