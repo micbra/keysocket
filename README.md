@@ -9,8 +9,8 @@ on common streaming websites.
 Currently supported services:
 
    * 163 Music
-   * 8tracks
    * 22tracks
+   * 8tracks
    * Amazon Cloud Player
    * Bandcamp
    * Birp
@@ -75,7 +75,7 @@ Currently supported services:
    * Zvooq
    * Яндекс.Музыка (Yandex.Music)
    * Яндекс.Радио (Yandex.Radio)
-   
+
 ## Integrate Web Page Media Keys With Any Site
 
 There is two ways of integration:
