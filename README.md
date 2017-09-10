@@ -8,22 +8,30 @@ on common streaming websites.
 
 Currently supported services:
 
+   * 163 Music
+   * 8tracks
+   * 22tracks
    * Amazon Cloud Player
    * Bandcamp
+   * Birp
    * Bop
+   * Bugs Music
    * Chrome Built-In Player
+   * Comcast/Xfinity
    * Deezer
    * Digitally Imported (di.fm)
    * Gaana.com
    * Google Play Music
    * Groove Music
    * Hype Machine
+   * iloveradio.de
    * Jamstash
    * Jango.com
    * JB Hi-Fi Now
    * Livestream.com
    * Mixcloud
    * Music Choice
+   * Myspace
    * Myzuka.fm
    * Naxos Music Library
    * Netflix
@@ -38,19 +46,26 @@ Currently supported services:
    * Plex
    * Pocketcasts.com
    * Prostopleer
+   * Qobuz
    * Rdio
    * Relax-Hub.com
    * Saavn.com
    * Slacker
+   * Sirius XM Radio
    * SomaFM
    * Songza
    * Soundcloud
+   * Sowndhaus
    * Spotify
+   * Spreaker
+   * Streamsquid
+   * Subsonic (and Madsonic)
    * Superplayer.fm
    * Synology Audio Station v.5
    * thesixtyone
    * Tidal
    * Tracksflow.com
+   * tunein.com
    * Twitch.tv
    * Ustream.tv
    * Vimeo
@@ -60,7 +75,6 @@ Currently supported services:
    * Zvooq
    * Яндекс.Музыка (Yandex.Music)
    * Яндекс.Радио (Yandex.Radio)
-   * 8tracks.com
    
 ## Integrate Web Page Media Keys With Any Site
 
