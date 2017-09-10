@@ -5,7 +5,7 @@ function onKeyPress(key) {
     } else if (key === PLAY) {
         var playPauseButton = document.querySelector('#player-play');
 
-        if(document.querySelector('#player-pause').style.getPropertyValue("display") == "block"){
+        if(document.querySelector('#player-pause').style.getPropertyValue("display") === "block"){
             playPauseButton = document.querySelector('#player-pause');
         }
 
@@ -15,3 +15,5 @@ function onKeyPress(key) {
         simulateClick(backButton);
     }
 }
+
+pluginLoaded('streamsquid');

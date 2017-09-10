@@ -11,3 +11,5 @@ function onKeyPress(key) {
         simulateClick(backButton);
     }
 }
+
+pluginLoaded('qobuz');

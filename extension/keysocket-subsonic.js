@@ -7,3 +7,5 @@ function onKeyPress(key) {
     location.href = "javascript:window.onPrevious()";
   }
 }
+
+pluginLoaded('subsonic');

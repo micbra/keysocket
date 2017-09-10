@@ -3,14 +3,14 @@ var usCanadaVersionSelectors = {
     pauseButtonSelector:'#player_pause_button',
     skipButtonSelector: '#player_skip_button',
     nextMixButtonSelector: '#next_mix_button'
-}
+};
 
 var youtubeVersionSelectors = {
     playButtonSelector: '#youtube_play_button',
     pauseButtonSelector: '#youtube_pause_button',
     skipButtonSelector: '#youtube_skip_button',
     nextMixButtonSelector: '#youtube_mix_button'
-}
+};
 
 function isYoutubeVersionRendered(){
     return document.querySelector('.international_message')
@@ -36,7 +36,7 @@ function pressOneButtonOrAnother(oneButtonSelector, anotherButtonSelector) {
 
 function onKeyPress(key) {
 
-    var selectors = getSelectorsForTheVersion()
+    var selectors = getSelectorsForTheVersion();
 
     if (key === NEXT) {
         pressOneButtonOrAnother(selectors.skipButtonSelector, selectors.nextMixButtonSelector)
