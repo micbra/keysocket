@@ -20,26 +20,26 @@ class TabProperties {
         this.isAudible = false;
     }
 
-    get id() {
-        return this.id;
-    }
-    set id(value) {
-        this.id = value;
-    }
+    // get id() {
+    //     return this.id;
+    // }
+    // set id(value) {
+    //     this.id = value;
+    // }
     
-    get controlled() {
-        return this.isCongtrolled;
-    }
-    set controlled(value) {
-        this.isCongtrolled = value;
-    }
+    // get controlled() {
+    //     return this.isCongtrolled;
+    // }
+    // set controlled(value) {
+    //     this.isCongtrolled = value;
+    // }
 
-    get audible() {
-        return this.isAudible;
-    }
-    set audible(value) {
-        this.isAudible = value;
-    }
+    // get audible() {
+    //     return this.isAudible;
+    // }
+    // set audible(value) {
+    //     this.isAudible = value;
+    // }
 }
 
 class TabsCollection {
@@ -200,7 +200,10 @@ class Messaging {
     }
 
     addTabRemovedListener() {
-        chrome.tabs.onRemoved.addListener(this.unregisterTab);
+        let self = this;
+        chrome.tabs.onRemoved.addListener(function (tabId) {
+            self.registeredTabs.remove(tabId);
+        });
     }
 
     attach() {
