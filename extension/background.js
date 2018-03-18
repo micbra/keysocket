@@ -15,22 +15,30 @@
 
 class TabProperties {
     constructor() {
+        this.id = undefined;
         this.isCongtrolled = false;
         this.isAudible = false;
     }
 
+    get id() {
+        return this.id;
+    }
+    set id(value) {
+        this.id = value;
+    }
+    
     get controlled() {
         return this.isCongtrolled;
     }
     set controlled(value) {
-        return this.isCongtrolled = value;
+        this.isCongtrolled = value;
     }
 
     get audible() {
         return this.isAudible;
     }
     set audible(value) {
-        return this.isAudible = value;
+        this.isAudible = value;
     }
 }
 
