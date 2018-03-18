@@ -16,30 +16,9 @@
 class TabProperties {
     constructor() {
         this.id = undefined;
-        this.isCongtrolled = false;
+        this.isControlled = false;
         this.isAudible = false;
     }
-
-    // get id() {
-    //     return this.id;
-    // }
-    // set id(value) {
-    //     this.id = value;
-    // }
-    
-    // get controlled() {
-    //     return this.isCongtrolled;
-    // }
-    // set controlled(value) {
-    //     this.isCongtrolled = value;
-    // }
-
-    // get audible() {
-    //     return this.isAudible;
-    // }
-    // set audible(value) {
-    //     this.isAudible = value;
-    // }
 }
 
 class TabsCollection {
@@ -69,7 +48,7 @@ class TabsCollection {
     each(func) {
         for (var tabId in this.storage) {
             if (this.storage.hasOwnProperty(tabId)) {
-                func(parseInt(tabId));
+                func(parseInt(tabId), this.storage[tabId]);
             }
         }
     }
@@ -79,7 +58,7 @@ class RegisteredTabsCollection extends TabsCollection {
     constructor() {
         super();
 
-        this.events = {"registered": [], "unregistered": []};
+        this.events = {"registered": [], "unregistered": [], "controlled": [], "uncontrolled": []};
     }
 
     add(tabId) {
@@ -104,8 +83,65 @@ class RegisteredTabsCollection extends TabsCollection {
         this.fireEvent("unregistered", tabId);
     }
 
+    toggleRegistered(tabId) {
+        if (this.has(tabId)) {
+            this.remove(tabId);
+        } else {
+            this.add(tabId);
+        }
+    }
+
+    setControlled(tabId) {
+        this.toggleControlled(tabId, true);
+    }
+
+    setUncontrolled(tabId) {
+        this.toggleControlled(tabId, false);
+    }
+
+    toggleControlled(tabId, state) {
+        if (!this.has(tabId)) {
+            throw "The tab " + tabId + " is not registered";
+        }
+
+        let tabProps = this.get(tabId);
+
+        if (state === undefined) {
+            state = !tabProps.isControlled;
+        } else if (typeof(state) != typeof(true)) { // default parameter behaviour
+            throw "State parameter for toggleControlled() must be bool";
+        }
+        
+        tabProps.isControlled = state;
+        if (tabProps.isControlled) {
+            this.setPageActionStateControlled(tabId);
+            this.fireEvent("controlled", tabId);
+        } else {
+            this.setPageActionStateUncontrolled(tabId);
+            this.fireEvent("uncontrolled", tabId);
+        }
+    }
+
     showPageAction(tabId) {
         chrome.pageAction.show(tabId);
+        chrome.pageAction.setIcon({
+            tabId: tabId,
+            path: {
+                '19': 'icons/icon19-inactive.png',
+                '38': 'icons/icon38-inactive.png'
+            }
+        });
+        chrome.pageAction.setTitle({
+            tabId: tabId,
+            title: 'This tab can be controlled by media keys, click to enable'
+        });
+    }
+
+    hidePageAction(tabId) {
+        chrome.pageAction.hide(tabId);
+    }
+
+    setPageActionStateControlled(tabId) {
         chrome.pageAction.setIcon({
             tabId: tabId,
             path: {
@@ -119,7 +155,7 @@ class RegisteredTabsCollection extends TabsCollection {
         });
     }
 
-    hidePageAction(tabId) {
+    setPageActionStateUncontrolled(tabId) {
         chrome.pageAction.setIcon({
             tabId: tabId,
             path: {
@@ -150,8 +186,10 @@ class RegisteredTabsCollection extends TabsCollection {
     }
 
     sendCommand(command) {
-        this.each(function (tabId) {
-            chrome.tabs.sendMessage(tabId, {command: command});
+        this.each(function (tabId, tabProps) {
+            if (tabProps.isControlled) {
+                chrome.tabs.sendMessage(tabId, {command: command});
+            }
         });
     }
 }
@@ -191,11 +229,7 @@ class Messaging {
     addOnPageActionClickedListener() {
         let self = this;
         chrome.pageAction.onClicked.addListener(function (tab) {
-            if (self.registeredTabs.has(tab.id)) {
-                self.registeredTabs.remove(tab.id);
-            } else {
-                self.registeredTabs.add(tab.id);
-            }
+            self.registeredTabs.toggleControlled(tab.id);
         });
     }
 
@@ -226,6 +260,8 @@ class ContextMenu {
         }
         this.registeredTabs.addListener("registered", updateContextMenuHandler);
         this.registeredTabs.addListener("unregistered", updateContextMenuHandler);
+        this.registeredTabs.addListener("controlled", updateContextMenuHandler);
+        this.registeredTabs.addListener("uncontrolled", updateContextMenuHandler);
         
         chrome.tabs.onActivated.addListener(function (evt) {
             self.updateContextMenu(evt.tabId);
@@ -237,11 +273,10 @@ class ContextMenu {
         chrome.tabs.query({active: true}, function(tab) {
             tab = tab[0];
             if (tab.id == tabId) {
-                if (self.registeredTabs.has(tabId)) {
+                if (self.registeredTabs.has(tabId) && self.registeredTabs.get(tabId).isControlled) {
                     chrome.contextMenus.update("keySocketMediaKeys-disableThisTab", {enabled: true});
                     chrome.contextMenus.update("keySocketMediaKeys-enableThisTab", {enabled: false});
-                }
-                else {
+                } else {
                     chrome.contextMenus.update("keySocketMediaKeys-disableThisTab", {enabled: false});
                     chrome.contextMenus.update("keySocketMediaKeys-enableThisTab", {enabled: true});
                 }
@@ -259,7 +294,7 @@ class ContextMenu {
             id: "keySocketMediaKeys-disableThisTab",
             title: "Disable this tab",
             onclick: function (a, tab) {
-                self.registeredTabs.remove(tab.id);
+                self.registeredTabs.setUncontrolled(tab.id);
             }
         });
         chrome.contextMenus.create({
@@ -267,7 +302,7 @@ class ContextMenu {
             id: "keySocketMediaKeys-enableThisTab",
             title: "Enable this tab",
             onclick: function (a, tab) {
-                self.registeredTabs.add(tab.id);
+                self.registeredTabs.setControlled(tab.id);
             }
         });
 
@@ -282,10 +317,8 @@ class ContextMenu {
             id: "keySocketMediaKeys-disableAllTabs",
             title: "Disable all tabs",
             onclick: function (a, tab) {
-                chrome.tabs.getAllInWindow(null, function (tabs) {
-                    for (var i = 0; i < tabs.length; i++) {
-                        self.registeredTabs.remove(tabs[i].id);
-                    }
+                self.registeredTabs.each(function (tabId) {
+                    self.registeredTabs.setUncontrolled(tabId);
                 });
             }
         });
@@ -294,10 +327,8 @@ class ContextMenu {
             id: "keySocketMediaKeys-enableAllTabs",
             title: "Enable all tabs",
             onclick: function (a, tab) {
-                chrome.tabs.getAllInWindow(null, function (tabs) {
-                    for (var i = 0; i < tabs.length; i++) {
-                        self.registeredTabs.add(tabs[i].id);
-                    }
+                self.registeredTabs.each(function (tabId) {
+                    self.registeredTabs.setControlled(tabId);
                 });
             }
         });
@@ -313,15 +344,9 @@ class ContextMenu {
             id: "keySocketMediaKeys-disableAllBut",
             title: "Disable all but this tab",
             onclick: function (a, tab) {
-                chrome.tabs.getAllInWindow(null, function (tabs) {
-                    for (var i = 0; i < tabs.length; i++) {
-                        if (tab.id !== tabs[i].id) {
-                            self.registeredTabs.remove(tabs[i].id);
-                        }
-                    }
+                self.registeredTabs.each(function (tabId, tabProps) {
+                    self.registeredTabs.toggleControlled(tabId, tabId == tab.id);
                 });
-
-                self.registeredTabs.add(tab.id);
             }
         });
 
@@ -330,14 +355,8 @@ class ContextMenu {
             id: "keySocketMediaKeys-enableAllBut",
             title: "Enable all but this tab",
             onclick: function (a, tab) {
-                self.registeredTabs.remove(tab.id);
-
-                chrome.tabs.getAllInWindow(null, function (tabs) {
-                    for (var i = 0; i < tabs.length; i++) {
-                        if (tab.id !== tabs[i].id) {
-                            self.registeredTabs.add(tabs[i].id);
-                        }
-                    }
+                self.registeredTabs.each(function (tabId, tabProps) {
+                    self.registeredTabs.toggleControlled(tabId, tabId != tab.id);
                 });
             }
         });
