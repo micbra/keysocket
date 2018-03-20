@@ -59,6 +59,12 @@ class RegisteredTabsCollection extends TabsCollection {
         super();
 
         this.events = {"registered": [], "unregistered": [], "controlled": [], "uncontrolled": []};
+        this.strategy = new DefaultTabControlLogicStrategy(this);
+
+        let self = this;
+        chrome.pageAction.onClicked.addListener(function (tab) {
+            self.strategy.onPageActionClicked(tab.id);
+        });
     }
 
     add(tabId) {
@@ -69,6 +75,8 @@ class RegisteredTabsCollection extends TabsCollection {
         super.add(tabId);
         this.showPageAction(tabId);
 
+        this.strategy.afterTabRegistered(tabId);
+
         this.fireEvent("registered", tabId);
     }
 
@@ -76,6 +84,8 @@ class RegisteredTabsCollection extends TabsCollection {
         if (!super.has(tabId)) {
             return;
         }
+
+        this.strategy.beforeTabUnregistered(tabId);
 
         super.remove(tabId);
         this.hidePageAction(tabId);
@@ -112,9 +122,13 @@ class RegisteredTabsCollection extends TabsCollection {
             throw "State parameter for toggleControlled() must be bool";
         }
         
+        if (!state) {
+            this.strategy.beforeTabUncontrolled(tabId);
+        }
         tabProps.isControlled = state;
-        if (tabProps.isControlled) {
+        if (state) {
             this.setPageActionStateControlled(tabId);
+            this.strategy.afterTabControlled(tabId);
             this.fireEvent("controlled", tabId);
         } else {
             this.setPageActionStateUncontrolled(tabId);
@@ -192,6 +206,10 @@ class RegisteredTabsCollection extends TabsCollection {
             }
         });
     }
+
+    setControllStrategy(strategy) {
+        this.strategy = strategy;
+    }
 }
 
 class Messaging {
@@ -226,13 +244,6 @@ class Messaging {
         });
     }
 
-    addOnPageActionClickedListener() {
-        let self = this;
-        chrome.pageAction.onClicked.addListener(function (tab) {
-            self.registeredTabs.toggleControlled(tab.id);
-        });
-    }
-
     addTabRemovedListener() {
         let self = this;
         chrome.tabs.onRemoved.addListener(function (tabId) {
@@ -243,7 +254,6 @@ class Messaging {
     attach() {
         this.addOnMessageListener();
         this.addOnCommandListener();
-        this.addOnPageActionClickedListener();
         this.addTabRemovedListener();
     }
 }
@@ -360,6 +370,43 @@ class ContextMenu {
                 });
             }
         });
+    }
+}
+
+class DefaultTabControlLogicStrategy {
+    constructor(registeredTabs) {
+        this.controlledByDefault = true;
+        this.onlyOneIsControlled = false;
+
+        this.registeredTabs = registeredTabs;
+    }
+
+    afterTabRegistered(tabId) {
+        if (this.controlledByDefault) {
+            this.registeredTabs.setControlled(tabId);
+        }
+    }
+
+    beforeTabUnregistered(tabId) {
+
+    }
+
+    afterTabControlled(tabId) {
+        if (this.onlyOneIsControlled) {
+            this.registeredTabs.each(function (itabId) {
+                if (itabId != tabId) {
+                    this.registeredTabs.setUncontrolled(tabId);
+                }
+            });
+        }
+    }
+
+    beforeTabUncontrolled(tabId) {
+
+    }
+
+    onPageActionClicked(tabId) {
+        this.registeredTabs.toggleControlled(tabId);
     }
 }
 
