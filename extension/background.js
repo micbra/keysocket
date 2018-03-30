@@ -68,13 +68,17 @@ class RegisteredTabsCollection extends TabsCollection {
         }
 
         let self = this;
-        chrome.pageAction.onClicked.addListener(function (tab) {
+        this.pageAction = new PageAction(function (tab) {
             if (self.get(tab.id).isControlled) {
                 self.strategy.setUncontrolled(tab.id);
             } else {
                 self.strategy.setControlled(tab.id);
             }
         });
+        this.addListener("registered", function (tabId) { self.pageAction.showPageAction(tabId); });
+        this.addListener("unregistered", function (tabId) { self.pageAction.hidePageAction(tabId); });
+        this.addListener("controlled", function (tabId) { self.pageAction.setPageActionStateControlled(tabId); });
+        this.addListener("uncontrolled", function (tabId) { self.pageAction.setPageActionStateUncontrolled(tabId); });
     }
 
     add(tabId) {
@@ -85,11 +89,9 @@ class RegisteredTabsCollection extends TabsCollection {
         this.strategy.beforeTabRegistered(tabId);
 
         super.add(tabId);
-        this.showPageAction(tabId);
+        this.fireEvent("registered", tabId);
 
         this.strategy.afterTabRegistered(tabId);
-
-        this.fireEvent("registered", tabId);
     }
 
     remove(tabId) {
@@ -100,11 +102,9 @@ class RegisteredTabsCollection extends TabsCollection {
         this.strategy.beforeTabUnregistered(tabId);
 
         super.remove(tabId);
-        this.hidePageAction(tabId);
+        this.fireEvent("unregistered", tabId);
 
         this.strategy.afterTabUnregistered(tabId);
-
-        this.fireEvent("unregistered", tabId);
     }
 
     toggleRegistered(tabId) {
@@ -148,75 +148,22 @@ class RegisteredTabsCollection extends TabsCollection {
             throw new Error("State parameter for toggleControlled() must be bool");
         }
         
-        if (!state) {
-            this.strategy.beforeTabUncontrolled(tabId);
-        }
-        tabProps.isControlled = state;
         if (state) {
             this.strategy.beforeTabControlled(tabId);
-            this.setPageActionStateControlled(tabId);
-            this.strategy.afterTabControlled(tabId);
+            tabProps.isControlled = true;
             this.fireEvent("controlled", tabId);
+            this.strategy.afterTabControlled(tabId);
             console.log("Tab " + tabId + " is controlled now");
         } else {
-            this.setPageActionStateUncontrolled(tabId);
-            this.strategy.afterTabUncontrolled(tabId);
+            this.strategy.beforeTabUncontrolled(tabId);
+            tabProps.isControlled = false;
             this.fireEvent("uncontrolled", tabId);
+            this.strategy.afterTabUncontrolled(tabId);
             console.log("Tab " + tabId + " is UNcontrolled now");
         }
     }
 
-    showPageAction(tabId) {
-        chrome.pageAction.show(tabId);
-        chrome.pageAction.setIcon({
-            tabId: tabId,
-            path: {
-                '19': 'icons/icon19-inactive.png',
-                '38': 'icons/icon38-inactive.png'
-            }
-        });
-        chrome.pageAction.setTitle({
-            tabId: tabId,
-            title: 'This tab can be controlled by media keys, click to enable'
-        });
-    }
-
-    hidePageAction(tabId) {
-        // callback is used to rule out an error when the tab is closed and no longer exists
-        chrome.tabs.get(tabId, function (tab) {
-            if (chrome.runtime.lastError === undefined) {
-                chrome.pageAction.hide(tab.id);
-            }
-        });
-    }
-
-    setPageActionStateControlled(tabId) {
-        chrome.pageAction.setIcon({
-            tabId: tabId,
-            path: {
-                '19': 'icons/icon19.png',
-                '38': 'icons/icon38.png'
-            }
-        });
-        chrome.pageAction.setTitle({
-            tabId: tabId,
-            title: 'Click to disable media keys for this tab'
-        });
-    }
-
-    setPageActionStateUncontrolled(tabId) {
-        chrome.pageAction.setIcon({
-            tabId: tabId,
-            path: {
-                '19': 'icons/icon19-inactive.png',
-                '38': 'icons/icon38-inactive.png'
-            }
-        });
-        chrome.pageAction.setTitle({
-            tabId: tabId,
-            title: 'Click to enable media keys for this tab'
-        });
-    }
+    
 
     addListener(event, listener) {
         if (!this.events.hasOwnProperty(event)) {
@@ -256,6 +203,61 @@ class RegisteredTabsCollection extends TabsCollection {
 
     setControlStrategy(strategy) {
         this.strategy = strategy;
+    }
+}
+
+class PageAction {
+    constructor(onClickHandler) {
+        chrome.pageAction.onClicked.addListener(onClickHandler);
+    }
+
+    showPageAction(tabId) {
+        chrome.pageAction.show(tabId);
+        this._setIcon(tabId, false);
+        this._setTitle(tabId, "This tab can be controlled by media keys, click to enable");
+    }
+
+    hidePageAction(tabId) {
+        // callback is used to rule out an error when the tab is closed and no longer exists
+        chrome.tabs.get(tabId, function (tab) {
+            if (chrome.runtime.lastError === undefined) {
+                chrome.pageAction.hide(tab.id);
+            }
+        });
+    }
+
+    setPageActionStateControlled(tabId) {
+        this._setIcon(tabId, true);
+        this._setTitle(tabId, "Click to disable media keys for this tab");
+    }
+
+    setPageActionStateUncontrolled(tabId) {
+        this._setIcon(tabId, false);
+        this._setTitle(tabId, "Click to enable media keys for this tab");
+    }
+
+    _setTitle(tabId, title) {
+        chrome.pageAction.setTitle({
+            tabId: tabId,
+            title: title
+        });
+    }
+
+    _setIcon(tabId, isControlled) {
+        let activity = "";
+        if (isControlled === false) {
+            activity = "-inactive";
+        } else if (isControlled !== true) {
+            throw new Error("Page action isControlled state is not boolean: " + isActive);
+        }
+
+        chrome.pageAction.setIcon({
+            tabId: tabId,
+            path: {
+                "19": "icons/icon19" + activity + ".png",
+                "38": "icons/icon38" + activity + ".png"
+            }
+        });
     }
 }
 
