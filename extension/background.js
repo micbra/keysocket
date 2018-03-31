@@ -54,31 +54,12 @@ class TabsCollection {
 };
 
 class RegisteredTabsCollection extends TabsCollection {
-    constructor(strategy) {
+    constructor(/*strategy*/) {
         super();
 
+        // this.strategy = strategy;
+
         this.events = {"registered": [], "unregistered": [], "controlled": [], "uncontrolled": []};
-
-        if (strategy == "stack") {
-            this.strategy = new AudibleTabControlLogicStrategy(this);
-            this.contextMenu = new ContextMenu(this, false);
-        } else if (strategy == "simple") {
-            this.strategy = new DefaultTabControlLogicStrategy(this);
-            this.contextMenu = new ContextMenu(this, true);
-        }
-
-        let self = this;
-        this.pageAction = new PageAction(function (tab) {
-            if (self.get(tab.id).isControlled) {
-                self.strategy.setUncontrolled(tab.id);
-            } else {
-                self.strategy.setControlled(tab.id);
-            }
-        });
-        this.addListener("registered", function (tabId) { self.pageAction.showPageAction(tabId); });
-        this.addListener("unregistered", function (tabId) { self.pageAction.hidePageAction(tabId); });
-        this.addListener("controlled", function (tabId) { self.pageAction.setPageActionStateControlled(tabId); });
-        this.addListener("uncontrolled", function (tabId) { self.pageAction.setPageActionStateUncontrolled(tabId); });
     }
 
     add(tabId) {
@@ -86,12 +67,12 @@ class RegisteredTabsCollection extends TabsCollection {
             return;
         }
 
-        this.strategy.beforeTabRegistered(tabId);
+        // this.strategy.beforeTabRegistered(tabId);
 
         super.add(tabId);
         this.fireEvent("registered", tabId);
 
-        this.strategy.afterTabRegistered(tabId);
+        // this.strategy.afterTabRegistered(tabId);
     }
 
     remove(tabId) {
@@ -99,20 +80,12 @@ class RegisteredTabsCollection extends TabsCollection {
             return;
         }
 
-        this.strategy.beforeTabUnregistered(tabId);
+        // this.strategy.beforeTabUnregistered(tabId);
 
         super.remove(tabId);
         this.fireEvent("unregistered", tabId);
 
-        this.strategy.afterTabUnregistered(tabId);
-    }
-
-    toggleRegistered(tabId) {
-        if (this.has(tabId)) {
-            this.remove(tabId);
-        } else {
-            this.add(tabId);
-        }
+        // this.strategy.afterTabUnregistered(tabId);
     }
 
     setControlled(tabId) {
@@ -149,60 +122,62 @@ class RegisteredTabsCollection extends TabsCollection {
         }
         
         if (state) {
-            this.strategy.beforeTabControlled(tabId);
+            // this.strategy.beforeTabControlled(tabId);
             tabProps.isControlled = true;
             this.fireEvent("controlled", tabId);
-            this.strategy.afterTabControlled(tabId);
+            // this.strategy.afterTabControlled(tabId);
             console.log("Tab " + tabId + " is controlled now");
         } else {
-            this.strategy.beforeTabUncontrolled(tabId);
+            // this.strategy.beforeTabUncontrolled(tabId);
             tabProps.isControlled = false;
             this.fireEvent("uncontrolled", tabId);
-            this.strategy.afterTabUncontrolled(tabId);
+            // this.strategy.afterTabUncontrolled(tabId);
             console.log("Tab " + tabId + " is UNcontrolled now");
         }
     }
 
-    
+    addListener(event, listener, priority) {
+        if (priority === undefined) {
+            priority = 0;
+        } else {
+            priority = parseInt(priority);
+        }
 
-    addListener(event, listener) {
         if (!this.events.hasOwnProperty(event)) {
             throw "Unknown event " + event;
         }
-        this.events[event].push(listener);
+
+        this.events[event].push({listener: listener, priority: priority});
     }
 
     fireEvent(event, data) {
         if (!this.events.hasOwnProperty(event)) {
             throw "Unknown event " + event;
         }
+
+        let priorities = [];
         this.events[event].forEach(function(el) {
-            el(data);
+            priorities.push(el.priority);
+        });
+        priorities.sort(function compareNumbers(a, b) {
+            return a - b;
+        });
+        let events = this.events;
+        priorities.forEach(function(pr) {
+            events[event].forEach(function(el) {
+                if (el.priority === pr) {
+                    el.listener(data);
+                }
+            });
         });
     }
 
-    applyCommand(command) {
-        this.strategy.beforeCommandApplied(command);
-        this.sendCommandToControlledTabs(command);
-        this.strategy.afterCommandApplied(command);
-    }
-
-    sendCommandToControlledTabs(command) {
-        let self = this;
+    eachControlled(func) {
         this.each(function (tabId, tabProps) {
-            if (tabProps.isControlled) {
-                self.sendCommandToTab(command, tabId);
+            if (tabProps.isControlled === true) {
+                func(tabId, tabProps);
             }
         });
-    }
-
-    sendCommandToTab(command, tabId) {
-        chrome.tabs.sendMessage(tabId, {command: command});
-        console.log("Command " + command + " was sent to tab " + tabId);
-    }
-
-    setControlStrategy(strategy) {
-        this.strategy = strategy;
     }
 }
 
@@ -261,55 +236,43 @@ class PageAction {
     }
 }
 
-class Messaging {
-    constructor(registeredTabs) {
-        this.registeredTabs = registeredTabs;
-    }
+class ExtToTabsMessaging {
+    constructor(commandListeners) {
+        this.commandListeners = commandListeners;
 
-    processMessageFromPage(command, tabId) {
-        if (command == 'registerTab' && tabId) {
-            this.registeredTabs.add(tabId);
-        } else if (command == 'unregisterTab' && tabId) {
-            this.registeredTabs.remove(tabId);
-        }
+        this.addOnMessageListener();
     }
 
     addOnMessageListener() {
         let self = this;
         chrome.runtime.onMessage.addListener(
             function (request, sender, sendResponse) {
-                console.log('Received message from tab ' + sender.tab.id + ': ', request);
-                self.processMessageFromPage(request.command, sender.tab.id);
+                let tabId = sender.tab.id;
+                console.log('Received message from tab ' + tabId + ': ', request);
+                if (tabId) {
+                    self.processMessageFromPage(request.command, tabId);
+                }
             }
         );
     }
 
-    addOnCommandListener() {
-        let self = this;
-        chrome.commands.onCommand.addListener(function (command) {
-            console.log('Command:', command);
-
-            self.registeredTabs.applyCommand(command);
-        });
+    processMessageFromPage(command, tabId) {
+        switch (command) {
+            case "registerTab": this.commandListeners.registerTab(tabId); break; // @todo
+            case "unregisterTab": this.commandListeners.unregisterTab(tabId); break; // @todo
+        }
     }
 
-    addTabRemovedListener() {
-        let self = this;
-        chrome.tabs.onRemoved.addListener(function (tabId) {
-            self.registeredTabs.remove(tabId);
-        });
-    }
-
-    attach() {
-        this.addOnMessageListener();
-        this.addOnCommandListener();
-        this.addTabRemovedListener();
+    sendCommandToTab(command, tabId) {
+        chrome.tabs.sendMessage(tabId, {command: command});
+        console.log("Command " + command + " was sent to tab " + tabId);
     }
 }
 
 class ContextMenu {
-    constructor(registeredTabs, full) {
+    constructor(registeredTabs, strategy, full) {
         this.registeredTabs = registeredTabs;
+        this.strategy = strategy;
 
         this.setupContextMenu(full);
 
@@ -353,7 +316,7 @@ class ContextMenu {
             id: "keySocketMediaKeys-disableThisTab",
             title: "Disable this tab",
             onclick: function (a, tab) {
-                self.registeredTabs.strategy.setUncontrolled(tab.id);
+                self.strategy.setUncontrolled(tab.id);
             }
         });
         chrome.contextMenus.create({
@@ -361,7 +324,7 @@ class ContextMenu {
             id: "keySocketMediaKeys-enableThisTab",
             title: "Enable this tab",
             onclick: function (a, tab) {
-                self.registeredTabs.strategy.setControlled(tab.id);
+                self.strategy.setControlled(tab.id);
             }
         });
 
@@ -432,11 +395,17 @@ class DefaultTabControlLogicStrategy {
         this.onlyOneIsControlled = false;
 
         this.registeredTabs = registeredTabs;
+
+        let self = this;
+        this.registeredTabs.addListener("registered", function (tabId) { self.afterTabRegistered(tabId); });
+        this.registeredTabs.addListener("unregistered", function (tabId) { self.afterTabUnregistered(tabId); });
+        this.registeredTabs.addListener("controlled", function (tabId) { self.afterTabControlled(tabId); });
+        this.registeredTabs.addListener("uncontrolled", function (tabId) { self.afterTabUncontrolled(tabId); });
     }
 
-    beforeTabRegistered(tabId) {
+    // beforeTabRegistered(tabId) {
 
-    }
+    // }
     
     afterTabRegistered(tabId) {
         if (this.controlledByDefault) {
@@ -444,17 +413,17 @@ class DefaultTabControlLogicStrategy {
         }
     }
 
-    beforeTabUnregistered(tabId) {
+    // beforeTabUnregistered(tabId) {
 
-    }
+    // }
 
     afterTabUnregistered(tabId) {
 
     }
 
-    beforeTabControlled(tabId) {
+    // beforeTabControlled(tabId) {
 
-    }
+    // }
 
     afterTabControlled(tabId) {
         if (this.onlyOneIsControlled) {
@@ -467,9 +436,9 @@ class DefaultTabControlLogicStrategy {
         }
     }
 
-    beforeTabUncontrolled(tabId) {
+    // beforeTabUncontrolled(tabId) {
 
-    }
+    // }
 
     afterTabUncontrolled(tabId) {
 
@@ -493,10 +462,12 @@ class DefaultTabControlLogicStrategy {
 }
 
 class AudibleTabControlLogicStrategy extends DefaultTabControlLogicStrategy {
-    constructor(registeredTabs) {
+    constructor(registeredTabs, messaging) {
         super(registeredTabs);
         this.controlledByDefault = false;
         this.onlyOneIsControlled = true;
+
+        this.messaging = messaging;
 
         this.audibleTabsStack = new CustomStack();
         this.controlledTabsStack = new CustomStack();
@@ -522,19 +493,19 @@ class AudibleTabControlLogicStrategy extends DefaultTabControlLogicStrategy {
             this._setAudibleTabAsSingleControlledAndAddToStack(tabId); // ... make it controllable, ...
         } else {
             this.audibleTabsStack.remove(tabId); // if stopped remove it from the list
-            console.log('Audible check: update playingTabs (remove)', tabId, this.audibleTabsStack);
+            console.log('Audible check: update playingTabs (remove)', tabId, this.audibleTabsStack.stack);
         }
     }
 
     _setAudibleTabAsSingleControlledAndAddToStack(tabId) {
         this.audibleTabsStack.push(tabId);
-        console.log('Update playingTabs (add)', tabId, this.audibleTabsStack);
+        console.log('Update playingTabs (add)', tabId, this.audibleTabsStack.stack);
 
         let self = this;
         this.registeredTabs.each(function (itabId, tabProps) {
             // pause all other registered tabs (not just controlled) when any new tab starts playback
             if (itabId != tabId && self.audibleTabsStack.has(itabId)) {
-                self.registeredTabs.sendCommandToTab('play-pause', itabId);
+                self.messaging.sendCommandToTab('play-pause', itabId);
                 console.log('Update playingTabs (`play-pause` sent)', itabId);
             }
 
@@ -560,18 +531,23 @@ class AudibleTabControlLogicStrategy extends DefaultTabControlLogicStrategy {
         super.afterTabUnregistered(tabId);
         this.controlledTabsStack.remove(tabId);
         this.audibleTabsStack.remove(tabId);
+        console.log("Tab " + tabId + " is unregisterer: playingTabs, controlledTabs", this.audibleTabsStack.stack, this.controlledTabsStack.stack);
         this._setControlledTabFromStack();
     }
 
     afterTabControlled(tabId) {
         super.afterTabControlled(tabId);
         this.controlledTabsStack.pushOnTop(tabId); // move last controlled tab to the top of the stack
+        console.log("Moved last controlled tab to the top of the stack", tabId, this.controlledTabsStack.stack);
     }
 
     _setControlledTabFromStack() {
         let topmost = this.controlledTabsStack.getTopmost();
         if (topmost !== undefined) {
             this.registeredTabs.setControlled(topmost);
+            console.log("Controlled tab was set from stack", topmost.id, this.controlledTabsStack.stack);
+        } else {
+            console.log("No tabs in stack to set controlled", this.controlledTabsStack.stack);
         }
     }
 
@@ -581,14 +557,14 @@ class AudibleTabControlLogicStrategy extends DefaultTabControlLogicStrategy {
         this._setControlledTabFromStack(); // disabling active page requires to activate control on another page from stack
     }
 
-    beforeCommandApplied(command) {
+    beforeCommandApplied(command) { // called from Controller
         super.beforeCommandApplied(command);
-        if (this.registeredTabs.getControlledTabs().length < 1) { // whan no tabs are conrtolled we make current active tab controllable ...
+        if (this.registeredTabs.getControlledTabs().length < 1) { // when no tabs are conrtolled we make current active tab controllable ...
             let self = this;
             chrome.tabs.query({active: true, windowType: "normal", currentWindow: true}, function (tabs) {
                 if (tabs.length > 0 && self.registeredTabs.has(tabs[0].id)) { // ... if it's registered
                     self.registeredTabs.setControlled(tabs[0].id);
-                    self.registeredTabs.sendCommandToTab(command, tabs[0].id);
+                    self.messaging.sendCommandToTab(command, tabs[0].id);
                 }
             });
         }
@@ -629,7 +605,75 @@ class CustomStack {
     }
 }
 
-let registeredTabs = new RegisteredTabsCollection("stack");
 
-let messaging = new Messaging(registeredTabs);
-messaging.attach();
+
+class Controller {
+    constructor(strategyName) {
+        this.registeredTabs;
+
+        let self = this;
+        this.messaging = new ExtToTabsMessaging({
+            registerTab: function (tabId) { self.registeredTabs.add(tabId); },
+            unregisterTab: function (tabId) { self.registeredTabs.remove(tabId); }
+        });
+
+        switch (strategyName){
+            case "stack":
+                this.registeredTabs = new RegisteredTabsCollection();
+                this.strategy = new AudibleTabControlLogicStrategy(this.registeredTabs, this.messaging);
+                new ContextMenu(this.registeredTabs, false);
+                break;
+            case "simple":
+                this.registeredTabs = new RegisteredTabsCollection();
+                this.strategy = new DefaultTabControlLogicStrategy(this.registeredTabs);
+                new ContextMenu(this.registeredTabs, true);
+                break;
+        }
+
+        this.setupPageAction();
+        
+        this.attachChromeListeners();
+    }
+
+    setupPageAction() {
+        let self = this;
+        let pageAction = new PageAction(function (tab) {
+            if (self.registeredTabs.get(tab.id).isControlled) {
+                self.strategy.setUncontrolled(tab.id);
+            } else {
+                self.strategy.setControlled(tab.id);
+            }
+        });
+        self.registeredTabs.addListener("registered", function (tabId) { pageAction.showPageAction(tabId); }, -1);
+        self.registeredTabs.addListener("unregistered", function (tabId) { pageAction.hidePageAction(tabId); }, -1);
+        self.registeredTabs.addListener("controlled", function (tabId) { pageAction.setPageActionStateControlled(tabId); }, -1);
+        self.registeredTabs.addListener("uncontrolled", function (tabId) { pageAction.setPageActionStateUncontrolled(tabId); }, -1);
+    }
+
+    attachChromeListeners() {
+        this.addOnCommandListener();
+        this.addTabRemovedListener();
+    }
+
+    addOnCommandListener() { // user press shortcut
+        let self = this;
+        chrome.commands.onCommand.addListener(function (command) {
+            console.log('Command:', command);
+            
+            self.strategy.beforeCommandApplied(command);
+            self.registeredTabs.eachControlled(function (tabid) {
+                self.messaging.sendCommandToTab(command, tabid);
+            });
+            self.strategy.afterCommandApplied(command);
+        });
+    }
+
+    addTabRemovedListener() { // tab is closed by user
+        let self = this;
+        chrome.tabs.onRemoved.addListener(function (tabId) {
+            self.registeredTabs.remove(tabId);
+        });
+    }
+}
+
+let controller = new Controller("stack");
