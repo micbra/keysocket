@@ -571,41 +571,7 @@ class AudibleTabControlLogicStrategy extends DefaultTabControlLogicStrategy {
     }
 }
 
-class CustomStack {
-    constructor() {
-        this.stack = [];
-    }
-
-    push(value) {
-        this.stack.push(value);
-    }
-
-    pushOnTop(value) {
-        this.remove(value);
-        this.stack.push(value);
-    }
-
-    pop() {
-        return this.stack.pop();
-    }
-
-    getTopmost() {
-        return this.stack[this.stack.length - 1];
-    }
-
-    remove(value) {
-        let index = this.stack.indexOf(value);
-        if (index !== -1) {
-            this.stack.splice(index, 1);
-        }
-    }
-
-    has(value) {
-        return this.stack.indexOf(value) !== -1;
-    }
-}
-
-
+import CustomStack from '/modules/stack.js';
 
 class Controller {
     constructor(strategyName) {

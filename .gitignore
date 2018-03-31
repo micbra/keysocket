@@ -1,2 +1,3 @@
 *.swp
 keysocket.zip
+tests/local-http-server
