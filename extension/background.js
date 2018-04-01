@@ -13,47 +13,9 @@
  * limitations under the License.
  */
 
-class TabProperties {
-    constructor(tabId) {
-        this.id = tabId;
-        this.isControlled = false;
-    }
-}
+import {TabCollection} from '/modules/tab-collection.js';
 
-class TabsCollection {
-    constructor() {
-        this.storage = {};
-    }
-
-    has(tabId) {
-        return this.storage.hasOwnProperty(tabId)
-    }
-
-    get(tabId) {
-        if (this.has(tabId)) {
-            return this.storage[tabId];
-        }
-        return undefined;
-    }
-
-    add(tabId) {
-        this.storage[tabId] = new TabProperties(tabId);
-    }
-
-    remove(tabId) {
-        delete this.storage[tabId];
-    }
-
-    each(func) {
-        for (var tabId in this.storage) {
-            if (this.storage.hasOwnProperty(tabId)) {
-                func(parseInt(tabId), this.storage[tabId]);
-            }
-        }
-    }
-};
-
-class RegisteredTabsCollection extends TabsCollection {
+class RegisteredTabCollection extends TabCollection {
     constructor(/*strategy*/) {
         super();
 
@@ -585,12 +547,12 @@ class Controller {
 
         switch (strategyName){
             case "stack":
-                this.registeredTabs = new RegisteredTabsCollection();
+                this.registeredTabs = new RegisteredTabCollection();
                 this.strategy = new AudibleTabControlLogicStrategy(this.registeredTabs, this.messaging);
                 new ContextMenu(this.registeredTabs, false);
                 break;
             case "simple":
-                this.registeredTabs = new RegisteredTabsCollection();
+                this.registeredTabs = new RegisteredTabCollection();
                 this.strategy = new DefaultTabControlLogicStrategy(this.registeredTabs);
                 new ContextMenu(this.registeredTabs, true);
                 break;
