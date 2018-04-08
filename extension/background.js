@@ -604,4 +604,4 @@ class Controller {
     }
 }
 
-let controller = new Controller("stack");
+let controller = new Controller("simple");
